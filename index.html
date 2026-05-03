@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MedBridge Pro — منصة الكفاءات الطبية</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;900&family=Tajawal:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:#0d9488;--teal-dark:#0f766e;--teal-light:#ccfbf1;
+  --navy:#0f172a;--slate:#64748b;
+  --bg:#f8fafc;--card:#ffffff;--border:#f1f5f9;
+  --text:#0f172a;--text-muted:#64748b;--text-light:#94a3b8;
+  --sidebar-bg:#0f172a;--sidebar-text:#94a3b8;--sidebar-active:#5eead4;
+  --emp-primary:#6366f1;--emp-primary-light:#ede9fe;
+}
+[data-theme="dark"]{
+  --bg:#0f172a;--card:#1e293b;--border:#334155;
+  --text:#f1f5f9;--text-muted:#94a3b8;--text-light:#64748b;
+  --sidebar-bg:#0a0f1e;--sidebar-text:#64748b;--sidebar-active:#5eead4;
+}
+*{box-sizing:border-box}
+body{font-family:'Cairo','Tajawal',sans-serif;background:var(--bg);color:var(--text);scroll-behavior:smooth;transition:background 0.3s,color 0.3s}
+.glass{background:rgba(255,255,255,0.85);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.4)}
+[data-theme="dark"] .glass{background:rgba(30,41,59,0.85);border:1px solid rgba(255,255,255,0.06)}
+input:focus,select:focus,textarea:focus{border-color:var(--teal)!important;box-shadow:0 0 0 4px rgba(13,148,136,0.12)!important;outline:none}
+.shimmer{background:linear-gradient(90deg,#f0f4f8 25%,#e8f0f8 50%,#f0f4f8 75%);background-size:200% 100%;animation:shimmer 1.5s infinite}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.step-card{animation:fadeSlideIn 0.4s cubic-bezier(0.4,0,0.2,1) forwards}
+.section-icon{width:48px;height:48px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+
+/* ─── Toast ─── */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:#0f172a;color:white;padding:14px 28px;border-radius:16px;font-weight:700;font-size:14px;z-index:9999;transition:transform 0.35s cubic-bezier(0.4,0,0.2,1);white-space:nowrap;display:flex;align-items:center;gap:10px;box-shadow:0 20px 40px rgba(0,0,0,0.2)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#scrollIndicator{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--teal),#6366f1);z-index:9999;transition:width 0.1s}
+
+/* ─── Auth ─── */
+.auth-bg{background-color:#f0fdfa;background-image:radial-gradient(circle at 20% 20%,rgba(13,148,136,0.08) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(99,102,241,0.06) 0%,transparent 50%)}
+.skill-level-btn{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;border:1.5px solid #e2e8f0;color:#94a3b8;cursor:pointer;transition:all 0.2s}
+.skill-level-btn.active{background:var(--teal);border-color:var(--teal);color:white}
+.exp-entry,.course-entry,.cert-entry,.lang-entry,.skill-entry{background:#f8fafc;border:1px solid #e2e8f0;border-radius:20px;padding:20px;position:relative;margin-bottom:14px}
+[data-theme="dark"] .exp-entry,[data-theme="dark"] .course-entry,[data-theme="dark"] .cert-entry,[data-theme="dark"] .lang-entry,[data-theme="dark"] .skill-entry{background:#1e293b;border-color:#334155}
+.remove-btn{position:absolute;top:14px;left:14px;width:30px;height:30px;border-radius:50%;background:#fee2e2;color:#ef4444;border:none;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;font-weight:900;transition:all 0.2s}
+.remove-btn:hover{background:#ef4444;color:white}
+.file-upload-btn{display:flex;align-items:center;gap:10px;padding:12px 20px;background:#f1f5f9;border:2px dashed #cbd5e1;border-radius:16px;cursor:pointer;font-size:13px;font-weight:700;color:#64748b;transition:all 0.2s}
+.file-upload-btn:hover{border-color:var(--teal);color:var(--teal);background:#f0fdfa}
+.photo-preview{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--teal);display:none}
+input[type=file]{display:none}
+.lang-dot{width:14px;height:14px;border-radius:50%;border:2px solid #cbd5e1;cursor:pointer;transition:all 0.2s;display:inline-block}
+.lang-dot.active{background:var(--teal);border-color:var(--teal)}
+
+/* ─── Jobseeker Sidebar ─── */
+.sidebar{width:240px;flex-shrink:0;background:var(--sidebar-bg);display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;z-index:100;overflow-y:auto;transition:transform 0.3s,background 0.3s}
+.sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.sidebar-logo h1{font-size:18px;font-weight:900;color:white;letter-spacing:-0.5px}
+.sidebar-logo p{font-size:11px;color:#64748b;font-weight:700;margin-top:2px}
+.nav-item{display:flex;align-items:center;gap:12px;padding:13px 20px;font-size:13px;font-weight:700;color:var(--sidebar-text);cursor:pointer;transition:all 0.2s;border-right:3px solid transparent}
+.nav-item:hover{color:#e2e8f0;background:rgba(255,255,255,0.04)}
+.nav-item.active{color:var(--sidebar-active);border-right-color:var(--sidebar-active);background:rgba(94,234,212,0.06)}
+.nav-item .nav-icon{font-size:17px;width:22px;flex-shrink:0;text-align:center}
+.nav-section-title{padding:16px 20px 6px;font-size:10px;font-weight:900;color:#334155;letter-spacing:0.08em;text-transform:uppercase}
+
+/* ─── Jobseeker Dash ─── */
+#dashApp{display:none}
+#dashApp.active{display:flex;min-height:100vh}
+.dash-main{margin-right:240px;flex:1;background:var(--bg);min-height:100vh;padding:0 0 60px;transition:background 0.3s}
+.dash-topnav{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;transition:background 0.3s}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px 24px;display:flex;flex-direction:column;gap:4px;transition:background 0.3s}
+.stat-card .stat-val{font-size:28px;font-weight:900;color:var(--text)}
+.stat-card .stat-lbl{font-size:12px;font-weight:700;color:var(--text-light)}
+.job-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;display:flex;gap:16px;align-items:flex-start;transition:all 0.2s}
+.job-card:hover{border-color:#ccfbf1;box-shadow:0 4px 20px rgba(13,148,136,0.06)}
+.job-card-logo{width:48px;height:48px;border-radius:14px;background:#f0fdfa;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0}
+.badge{display:inline-flex;align-items:center;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:700}
+.badge-green{background:#dcfce7;color:#15803d}
+.badge-blue{background:#dbeafe;color:#1d4ed8}
+.badge-amber{background:#fef3c7;color:#b45309}
+.badge-gray{background:#f1f5f9;color:#475569}
+.badge-red{background:#fee2e2;color:#dc2626}
+.badge-teal{background:#f0fdfa;color:#0f766e}
+.badge-purple{background:#ede9fe;color:#7c3aed}
+.badge-orange{background:#fed7aa;color:#c2410c}
+.notif-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.notif-dot{width:8px;height:8px;border-radius:50%;background:var(--teal);flex-shrink:0;margin-top:5px}
+.stars{color:#f59e0b;font-size:16px;letter-spacing:2px}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+.filter-chip{padding:6px 16px;border-radius:99px;font-size:12px;font-weight:700;border:1.5px solid var(--border);color:var(--text-muted);cursor:pointer;transition:all 0.2s;background:var(--card)}
+.filter-chip.active{background:var(--teal);border-color:var(--teal);color:white}
+.app-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border);gap:12px}
+.section-card{background:var(--card);border:1px solid var(--border);border-radius:24px;padding:24px;transition:background 0.3s}
+.form-input{width:100%;padding:12px 16px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;font-size:13px;font-weight:600;color:var(--text);font-family:'Cairo',sans-serif;transition:all 0.2s}
+.form-label{font-size:12px;font-weight:900;color:var(--text-muted);margin-bottom:6px;display:block}
+
+/* ─── Bottom bar ─── */
+.bottom-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--sidebar-bg);z-index:200;padding:8px 4px 12px;border-top:1px solid rgba(255,255,255,0.07)}
+.bottom-bar-items{display:flex;justify-content:space-around}
+.bottom-item{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 10px;border-radius:12px;cursor:pointer;font-size:10px;font-weight:700;color:#64748b;transition:all 0.2s;min-width:52px}
+.bottom-item.active{color:var(--sidebar-active)}
+.bottom-item .bi-icon{font-size:20px}
+@media(max-width:768px){
+  .sidebar{display:none!important}
+  .dash-main{margin-right:0;padding-bottom:90px}
+  .bottom-bar{display:block}
+  .emp-sidebar{display:none!important}
+  .emp-dash-main{margin-right:0;padding-bottom:90px}
+}
+
+/* ─── Application Status Timeline ─── */
+.status-timeline{display:flex;flex-direction:column;gap:0}
+.status-step{display:flex;gap:16px;position:relative}
+.status-step:not(:last-child)::after{content:'';position:absolute;right:19px;top:36px;bottom:-4px;width:2px;background:var(--border)}
+.status-step.done::after{background:var(--teal)}
+.status-dot{width:40px;height:40px;border-radius:50%;border:2px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;background:var(--card);position:relative;z-index:1}
+.status-step.done .status-dot{border-color:var(--teal);background:#f0fdfa}
+.status-step.current .status-dot{border-color:#f59e0b;background:#fef3c7;animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,0.4)}50%{box-shadow:0 0 0 8px rgba(245,158,11,0)}}
+
+/* ─── Training Cards ─── */
+.train-card{background:var(--card);border:1px solid var(--border);border-radius:20px;overflow:hidden;transition:all 0.2s;cursor:pointer}
+.train-card:hover{box-shadow:0 8px 30px rgba(0,0,0,0.08);transform:translateY(-2px)}
+.train-card-header{padding:20px;border-bottom:1px solid var(--border);display:flex;gap:14px;align-items:flex-start}
+.train-card-body{padding:16px 20px}
+.train-progress-bar{height:6px;background:var(--border);border-radius:99px;overflow:hidden;margin-top:8px}
+.train-progress-fill{height:100%;background:linear-gradient(90deg,var(--teal),#6366f1);border-radius:99px;transition:width 0.5s}
+
+/* ─── Settings ─── */
+.setting-row{display:flex;justify-content:space-between;align-items:center;padding:16px 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}
+.toggle-switch{width:48px;height:26px;background:#e2e8f0;border-radius:99px;cursor:pointer;position:relative;transition:background 0.3s;flex-shrink:0}
+.toggle-switch.on{background:var(--teal)}
+.toggle-knob{width:20px;height:20px;background:white;border-radius:50%;position:absolute;top:3px;right:3px;transition:transform 0.3s;box-shadow:0 2px 4px rgba(0,0,0,0.2)}
+.toggle-switch.on .toggle-knob{transform:translateX(-22px)}
+
+/* ─── Verified badge ─── */
+.verified-badge{display:inline-flex;align-items:center;gap:5px;background:linear-gradient(135deg,#dcfce7,#bbf7d0);color:#15803d;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:900;border:1px solid #86efac}
+.pending-badge{display:inline-flex;align-items:center;gap:5px;background:#fef3c7;color:#b45309;padding:4px 12px;border-radius:99px;font-size:11px;font-weight:900;border:1px solid #fde68a}
+
+/* ─── Slider ─── */
+.range-slider{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;background:#e2e8f0;outline:none;cursor:pointer}
+.range-slider::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:20px;height:20px;border-radius:50%;background:var(--emp-primary);cursor:pointer;box-shadow:0 2px 8px rgba(99,102,241,0.4)}
+.range-slider::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:var(--emp-primary);cursor:pointer;border:none}
+
+/* ─── Employer Auth ─── */
+.emp-auth-bg{background-color:#f5f3ff;background-image:radial-gradient(circle at 20% 20%,rgba(99,102,241,0.09) 0%,transparent 50%),radial-gradient(circle at 80% 80%,rgba(13,148,136,0.05) 0%,transparent 50%)}
+.doc-upload-area{border:2px dashed #c7d2fe;border-radius:20px;padding:24px;text-align:center;cursor:pointer;transition:all 0.2s;background:#f8f7ff}
+.doc-upload-area:hover,.doc-upload-area.has-file{border-color:var(--emp-primary);background:#f0effe}
+
+/* ─── Employer Sidebar ─── */
+#empDashApp{display:none}
+#empDashApp.active{display:flex;min-height:100vh}
+.emp-sidebar{width:240px;flex-shrink:0;background:#0c0f1d;display:flex;flex-direction:column;position:fixed;top:0;right:0;bottom:0;z-index:100;overflow-y:auto;transition:transform 0.3s}
+.emp-sidebar-logo{padding:24px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.07)}
+.emp-nav-item{display:flex;align-items:center;gap:12px;padding:13px 20px;font-size:13px;font-weight:700;color:#64748b;cursor:pointer;transition:all 0.2s;border-right:3px solid transparent}
+.emp-nav-item:hover{color:#e2e8f0;background:rgba(255,255,255,0.04)}
+.emp-nav-item.active{color:#818cf8;border-right-color:#818cf8;background:rgba(129,140,248,0.07)}
+.emp-nav-item .nav-icon{font-size:17px;width:22px;flex-shrink:0;text-align:center}
+.emp-dash-main{margin-right:240px;flex:1;background:var(--bg);min-height:100vh;padding:0 0 60px;transition:background 0.3s}
+.emp-topnav{background:var(--card);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.emp-stat-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px 24px;transition:all 0.2s}
+.emp-stat-card:hover{border-color:#c7d2fe;box-shadow:0 4px 20px rgba(99,102,241,0.07)}
+
+/* ─── CV Match card ─── */
+.cv-match-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:20px;transition:all 0.2s;position:relative;overflow:hidden}
+.cv-match-card:hover{border-color:#a5b4fc;box-shadow:0 4px 20px rgba(99,102,241,0.08);transform:translateY(-1px)}
+.cv-match-score{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:white;background:linear-gradient(135deg,var(--emp-primary),var(--teal));flex-shrink:0}
+.cv-avatar{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:white;flex-shrink:0}
+
+/* ─── Post Job Modal ─── */
+#postJobModal{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.75);backdrop-filter:blur(8px);z-index:9998;overflow-y:auto;padding:40px 20px;align-items:flex-start;justify-content:center}
+#postJobModal.open{display:flex}
+.modal-box{background:var(--card);max-width:620px;width:100%;border-radius:28px;padding:36px;box-shadow:0 40px 80px rgba(0,0,0,0.2);animation:fadeSlideIn 0.3s ease}
+
+/* ─── CV Detail Modal ─── */
+#cvDetailModal{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.75);backdrop-filter:blur(8px);z-index:9999;overflow-y:auto;padding:40px 20px;align-items:flex-start;justify-content:center}
+#cvDetailModal.open{display:flex}
+
+/* ─── Employer Pending ─── */
+#empPendingPage{display:none;min-height:100vh;background:#f5f3ff;align-items:center;justify-content:center;flex-direction:column;padding:40px}
+#empPendingPage.active{display:flex}
+
+/* ─── Audit log ─── */
+.audit-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);font-size:12px}
+.audit-row:last-child{border-bottom:none}
+
+/* ─── Emp bottom bar ─── */
+.emp-bottom-bar{display:none;position:fixed;bottom:0;left:0;right:0;background:#0c0f1d;z-index:200;padding:8px 4px 12px;border-top:1px solid rgba(255,255,255,0.07)}
+@media(max-width:768px){.emp-bottom-bar{display:block}}
+</style>
+</head>
+<body>
+
+<div id="scrollIndicator" style="width:0%"></div>
+<div id="toast"><span id="toastIcon">✓</span><span id="toastMsg">تم الحفظ بنجاح</span></div>
+
+<!-- ============================================================
+     1. AUTH PAGE — JOBSEEKER + EMPLOYER TOGGLE
+============================================================ -->
+<div id="authPage" class="min-h-screen flex items-center justify-center p-5 auth-bg">
+  <div class="w-full max-w-[500px]">
+    <div class="text-center mb-8">
+      <div class="relative inline-block mb-5">
+        <div class="w-20 h-20 bg-gradient-to-br from-teal-500 to-teal-700 rounded-[1.8rem] flex items-center justify-center text-white font-black text-3xl shadow-2xl shadow-teal-200 mx-auto">M</div>
+        <span class="absolute -bottom-1 -left-1 bg-white rounded-full w-7 h-7 flex items-center justify-content-center text-sm shadow-md flex items-center justify-center">🏥</span>
+      </div>
+      <h1 class="text-3xl font-black text-slate-900 tracking-tight">MedBridge <span class="text-teal-600">Pro</span></h1>
+      <p class="text-slate-500 mt-1.5 font-medium text-sm">المنصة المهنية للكفاءات الطبية في العراق</p>
+    </div>
+
+    <div class="glass rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.1)] overflow-hidden">
+      <div class="flex border-b border-slate-100">
+        <button onclick="switchAuthMode('register')" id="tabRegister" class="flex-1 py-4 font-black text-sm transition-all text-teal-600 border-b-2 border-teal-600">حساب جديد</button>
+        <button onclick="switchAuthMode('login')" id="tabLogin" class="flex-1 py-4 font-black text-sm transition-all text-slate-400 border-b-2 border-transparent">تسجيل الدخول</button>
+      </div>
+
+      <div class="p-8 md:p-10">
+        <!-- Role Toggle -->
+        <div id="roleToggleWrap" class="flex p-1.5 bg-slate-100 rounded-2xl mb-7">
+          <button onclick="switchRole('jobseeker')" id="btnJob" class="flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white shadow-sm text-teal-600">🔍 باحث عن عمل</button>
+          <button onclick="switchRole('employer')" id="btnOrg" class="flex-1 py-3 rounded-xl font-black text-sm transition-all text-slate-500">🏢 صاحب مؤسسة</button>
+        </div>
+
+        <!-- JOBSEEKER FIELDS -->
+        <div id="jobseekerFields">
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div class="space-y-1.5">
+              <label class="text-xs font-black text-slate-400">التخصص</label>
+              <select id="jsSpecialty" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm transition-all">
+                <option value="">اختر التخصص...</option>
+                <option>صيدلاني</option><option>طبيب</option><option>ممرض / ممرضة</option>
+                <option>تحليلات مختبرية</option><option>أشعة</option><option>طوارئ طبية</option>
+                <option>تخدير</option><option>تغذية إكلينيكية</option><option>فيزياء طبية</option>
+                <option>أسنان</option><option>تأهيل وعلاج طبيعي</option><option>إدارة مستشفيات</option><option>أخرى</option>
+              </select>
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-black text-slate-400">المحافظة</label>
+              <select id="jsCity" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm transition-all">
+                <option value="">اختر...</option>
+                <option>بغداد</option><option>البصرة</option><option>نينوى</option>
+                <option>أربيل</option><option>النجف</option><option>كربلاء</option>
+                <option>الأنبار</option><option>ديالى</option><option>صلاح الدين</option>
+                <option>كركوك</option><option>واسط</option><option>ميسان</option>
+                <option>المثنى</option><option>ذي قار</option><option>القادسية</option>
+                <option>بابل</option><option>دهوك</option><option>السليمانية</option><option>حلبجة</option>
+              </select>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <input type="text" placeholder="الاسم الكامل" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm transition-all" id="jsName">
+            <input type="email" placeholder="البريد الإلكتروني" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm transition-all" id="jsEmail">
+            <input type="password" placeholder="كلمة المرور" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm transition-all" id="jsPass">
+          </div>
+          <button onclick="loginJobseeker()" class="mt-5 w-full py-4 bg-gradient-to-l from-teal-600 to-teal-500 text-white font-black rounded-2xl shadow-lg shadow-teal-200 hover:shadow-xl hover:shadow-teal-200 transition-all text-sm">
+            إنشاء حساب باحث عن عمل ←
+          </button>
+        </div>
+
+        <!-- EMPLOYER FIELDS -->
+        <div id="employerFields" class="hidden">
+          <div id="empRegStep1">
+            <p class="text-xs font-black text-slate-400 mb-3 flex items-center gap-2"><span class="w-5 h-5 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-[10px] font-black">1</span> معلومات المؤسسة</p>
+            <div class="space-y-3">
+              <input type="text" placeholder="اسم المؤسسة الرسمي" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empOrgName">
+              <select class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empOrgType">
+                <option value="">نوع المؤسسة...</option>
+                <option>مستشفى حكومي</option><option>مستشفى خاص</option><option>صيدلية</option>
+                <option>مختبر طبي</option><option>عيادة خاصة</option><option>مركز صحي</option>
+                <option>شركة أدوية</option><option>مستودع أدوية</option><option>شركة تسويق طبي</option>
+                <option>مركز تدريب</option><option>مركز تأهيل</option><option>أخرى</option>
+              </select>
+              <div class="grid grid-cols-2 gap-3">
+                <select class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empCity">
+                  <option value="">المحافظة...</option>
+                  <option>بغداد</option><option>البصرة</option><option>نينوى</option><option>أربيل</option>
+                  <option>النجف</option><option>كربلاء</option><option>الأنبار</option><option>ديالى</option>
+                  <option>صلاح الدين</option><option>كركوك</option><option>واسط</option><option>ميسان</option>
+                </select>
+                <input type="text" placeholder="العنوان التقريبي" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empAddress">
+              </div>
+              <input type="tel" placeholder="رقم الهاتف الرسمي" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empPhone">
+              <input type="email" placeholder="البريد الإلكتروني الرسمي" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empEmail">
+              <input type="password" placeholder="كلمة المرور" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empPass">
+            </div>
+            <button onclick="goEmpStep2()" class="mt-5 w-full py-4 bg-gradient-to-l from-indigo-600 to-indigo-500 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:shadow-xl transition-all text-sm">
+              التالي — معلومات التحقق ←
+            </button>
+          </div>
+
+          <div id="empRegStep2" class="hidden">
+            <p class="text-xs font-black text-slate-400 mb-3 flex items-center gap-2"><span class="w-5 h-5 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center text-[10px] font-black">2</span> معلومات التحقق والتوثيق</p>
+            <div class="space-y-3 mb-4">
+              <input type="text" placeholder="اسم الشخص المسؤول" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empResponsible">
+              <input type="text" placeholder="المنصب الوظيفي" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empPosition">
+              <input type="tel" placeholder="رقم هاتف المسؤول" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="empResponsiblePhone">
+            </div>
+            <p class="text-xs font-black text-slate-400 mb-3">المستندات المطلوبة</p>
+            <div class="space-y-3">
+              <div class="doc-upload-area" onclick="document.getElementById('licenseFile').click()" id="licenseArea">
+                <input type="file" id="licenseFile" accept=".pdf,.jpg,.png" onchange="setDocFile('licenseArea','licenseFile','إجازة مزاولة المهنة')">
+                <div class="doc-icon text-3xl mb-2">📄</div>
+                <p class="font-black text-sm text-slate-600">إجازة مزاولة المهنة</p>
+                <p class="text-xs text-slate-400 mt-1">PDF أو صورة</p>
+              </div>
+              <div class="doc-upload-area" onclick="document.getElementById('commercialFile').click()" id="commercialArea">
+                <input type="file" id="commercialFile" accept=".pdf,.jpg,.png" onchange="setDocFile('commercialArea','commercialFile','السجل التجاري')">
+                <div class="doc-icon text-3xl mb-2">🏛️</div>
+                <p class="font-black text-sm text-slate-600">السجل التجاري أو كتاب التأسيس</p>
+                <p class="text-xs text-slate-400 mt-1">PDF أو صورة</p>
+              </div>
+            </div>
+            <div class="flex gap-3 mt-5">
+              <button onclick="showStep('empRegStep1','empRegStep2')" class="flex-1 py-4 border-2 border-slate-200 text-slate-500 font-black rounded-2xl text-sm hover:bg-slate-50 transition-all">→ رجوع</button>
+              <button onclick="loginEmployer()" class="flex-1 py-4 bg-gradient-to-l from-indigo-600 to-indigo-500 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 hover:shadow-xl transition-all text-sm">إرسال الطلب ✓</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Login mode -->
+        <div id="loginFields" class="hidden space-y-3">
+          <input type="email" placeholder="البريد الإلكتروني" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="loginEmail">
+          <input type="password" placeholder="كلمة المرور" class="w-full px-4 py-3 bg-white border border-slate-200 rounded-2xl font-bold text-sm" id="loginPass">
+          <button onclick="handleLogin()" class="mt-2 w-full py-4 bg-gradient-to-l from-teal-600 to-teal-500 text-white font-black rounded-2xl shadow-lg shadow-teal-200 hover:shadow-xl transition-all text-sm">
+            تسجيل الدخول ←
+          </button>
+          <div class="text-center mt-3">
+            <p class="text-xs text-slate-400 font-bold">للتجربة السريعة:</p>
+            <div class="flex gap-2 mt-2">
+              <button onclick="demoLogin('jobseeker')" class="flex-1 py-2 bg-teal-50 text-teal-700 font-black rounded-xl text-xs border border-teal-100 hover:bg-teal-100 transition-all">🔍 دخول كباحث</button>
+              <button onclick="demoLogin('employer')" class="flex-1 py-2 bg-indigo-50 text-indigo-700 font-black rounded-xl text-xs border border-indigo-100 hover:bg-indigo-100 transition-all">🏢 دخول كمؤسسة</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     2. EMPLOYER PENDING PAGE
+============================================================ -->
+<div id="empPendingPage">
+  <div class="text-center max-w-md">
+    <div class="w-24 h-24 bg-gradient-to-br from-indigo-500 to-indigo-700 rounded-[2rem] flex items-center justify-center text-5xl mx-auto mb-6 shadow-2xl shadow-indigo-200">⏳</div>
+    <h2 class="text-2xl font-black text-slate-800 mb-3">طلبك قيد المراجعة</h2>
+    <p class="text-slate-500 font-bold text-sm leading-relaxed mb-6">شكراً لتسجيلك في MedBridge Pro. سيتم مراجعة مستنداتك من قِبل فريقنا خلال 24-48 ساعة عمل. ستتلقى إشعاراً فور تفعيل حسابك.</p>
+    <div class="bg-white rounded-3xl p-6 text-right shadow-sm border border-indigo-100 space-y-3 mb-6">
+      <div class="flex justify-between text-sm font-bold"><span class="text-slate-400">اسم المؤسسة</span><span class="text-slate-700" id="pendingOrgName">—</span></div>
+      <div class="flex justify-between text-sm font-bold"><span class="text-slate-400">نوع المؤسسة</span><span class="text-slate-700" id="pendingOrgType">—</span></div>
+      <div class="flex justify-between text-sm font-bold"><span class="text-slate-400">حالة الحساب</span><span class="pending-badge">⏳ قيد المراجعة</span></div>
+    </div>
+    <button onclick="demoActivateEmployer()" class="w-full py-4 bg-gradient-to-l from-indigo-600 to-indigo-500 text-white font-black rounded-2xl shadow-lg shadow-indigo-200 text-sm">
+      محاكاة تفعيل الحساب (للعرض) →
+    </button>
+  </div>
+</div>
+
+<!-- ============================================================
+     3. JOBSEEKER DASHBOARD
+============================================================ -->
+<div id="dashApp">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <h1>MedBridge <span style="color:#5eead4">Pro</span></h1>
+      <p>باحث عن عمل</p>
+    </div>
+    <div style="padding:16px 0">
+      <div class="nav-section-title">الرئيسية</div>
+      <div class="nav-item active" onclick="jsNav('home',this)"><span class="nav-icon">🏠</span>لوحة التحكم</div>
+      <div class="nav-item" onclick="jsNav('jobs',this)"><span class="nav-icon">💼</span>الوظائف</div>
+      <div class="nav-item" onclick="jsNav('training',this)"><span class="nav-icon">🎓</span>التدريب</div>
+      <div class="nav-item" onclick="jsNav('applications',this)"><span class="nav-icon">📋</span>طلباتي</div>
+      <div class="nav-section-title">ملفي</div>
+      <div class="nav-item" onclick="jsNav('cv',this)"><span class="nav-icon">📄</span>السيرة الذاتية</div>
+      <div class="nav-item" onclick="jsNav('notifications',this)"><span class="nav-icon">🔔</span>الإشعارات <span class="badge badge-teal mr-auto text-[10px]">3</span></div>
+      <div class="nav-section-title">الحساب</div>
+      <div class="nav-item" onclick="jsNav('settings',this)"><span class="nav-icon">⚙️</span>الإعدادات</div>
+      <div class="nav-item" onclick="logout()" style="color:#f87171"><span class="nav-icon">🚪</span>تسجيل الخروج</div>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div class="dash-main">
+    <div class="dash-topnav">
+      <div>
+        <h2 class="font-black text-base" id="jsPageTitle">لوحة التحكم</h2>
+        <p class="text-xs font-bold" style="color:var(--text-light)" id="jsPageSub">أهلاً بك في MedBridge Pro</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style="background:var(--border)">🌙</button>
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-teal-500 to-teal-700 flex items-center justify-center text-white font-black text-sm">ع</div>
+      </div>
+    </div>
+
+    <!-- JS HOME -->
+    <div id="js-home" class="p-6 space-y-6">
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="stat-card"><div class="stat-lbl">وظائف متاحة</div><div class="stat-val">24</div><div class="text-xs font-bold text-green-500 mt-1">+3 اليوم</div></div>
+        <div class="stat-card"><div class="stat-lbl">طلبات مرسلة</div><div class="stat-val">7</div><div class="text-xs font-bold text-indigo-500 mt-1">2 معلّقة</div></div>
+        <div class="stat-card"><div class="stat-lbl">دعوات التدريب</div><div class="stat-val">3</div><div class="text-xs font-bold text-amber-500 mt-1">جديد</div></div>
+        <div class="stat-card"><div class="stat-lbl">تقييم السيرة</div><div class="stat-val">⭐ 4.2</div><div class="text-xs font-bold text-teal-500 mt-1">جيد جداً</div></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="section-card">
+          <h3 class="font-black text-sm mb-4 flex items-center gap-2">💼 أحدث الوظائف المطابقة</h3>
+          <div class="space-y-3">
+            <div class="job-card">
+              <div class="job-card-logo">💊</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                  <p class="font-black text-sm">صيدلاني سريري</p>
+                  <span class="badge badge-green">جديد</span>
+                </div>
+                <p class="text-xs font-bold mt-1" style="color:var(--text-muted)">مستشفى ابن سينا • بغداد</p>
+                <p class="text-xs font-bold mt-1" style="color:var(--text-light)">خبرة 1-3 سنوات • دوام كامل</p>
+              </div>
+            </div>
+            <div class="job-card">
+              <div class="job-card-logo">🔬</div>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2 flex-wrap">
+                  <p class="font-black text-sm">فني مختبر</p>
+                  <span class="badge badge-blue">مميّز</span>
+                </div>
+                <p class="text-xs font-bold mt-1" style="color:var(--text-muted)">مختبر الرازي • البصرة</p>
+                <p class="text-xs font-bold mt-1" style="color:var(--text-light)">خبرة 0-2 سنوات</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="section-card">
+          <h3 class="font-black text-sm mb-4 flex items-center gap-2">🔔 الإشعارات الأخيرة</h3>
+          <div>
+            <div class="notif-item"><div class="notif-dot mt-1.5"></div><div><p class="text-sm font-bold">دعوة للتقديم من مستشفى بغداد التعليمي</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">منذ ساعتين</p></div></div>
+            <div class="notif-item"><div class="notif-dot mt-1.5"></div><div><p class="text-sm font-bold">تم قبول طلبك للتدريب في شركة الخير</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">أمس</p></div></div>
+            <div class="notif-item" style="border:none"><div class="notif-dot mt-1.5"></div><div><p class="text-sm font-bold">تم إضافة وظيفة جديدة تتناسب مع تخصصك</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">منذ يومين</p></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS JOBS -->
+    <div id="js-jobs" class="p-6 space-y-5 hidden">
+      <div class="filter-bar">
+        <div class="filter-chip active">الكل</div>
+        <div class="filter-chip">وظائف</div>
+        <div class="filter-chip">تدريب</div>
+        <div class="filter-chip">بغداد</div>
+        <div class="filter-chip">البصرة</div>
+      </div>
+      <div class="space-y-3">
+        <div class="job-card"><div class="job-card-logo">💊</div><div class="flex-1"><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="font-black text-sm">صيدلاني سريري</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">مستشفى ابن سينا • بغداد</p></div><span class="badge badge-green">وظيفة</span></div><p class="text-xs font-bold mt-2" style="color:var(--text-light)">خبرة 1-3 سنوات • دوام كامل</p><button class="mt-3 px-4 py-2 bg-teal-50 text-teal-700 rounded-xl font-black text-xs hover:bg-teal-100 transition-all" onclick="showToast('تم إرسال طلبك بنجاح','✅')">تقديم الطلب</button></div></div>
+        <div class="job-card"><div class="job-card-logo">🏥</div><div class="flex-1"><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="font-black text-sm">ممرض طوارئ</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">مركز الخليج الطبي • البصرة</p></div><span class="badge badge-purple">تدريب</span></div><p class="text-xs font-bold mt-2" style="color:var(--text-light)">خريج • 6 أشهر</p><button class="mt-3 px-4 py-2 bg-teal-50 text-teal-700 rounded-xl font-black text-xs hover:bg-teal-100 transition-all" onclick="showToast('تم إرسال طلبك بنجاح','✅')">تقديم الطلب</button></div></div>
+        <div class="job-card"><div class="job-card-logo">🦷</div><div class="flex-1"><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="font-black text-sm">طبيب أسنان</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">عيادة النور • النجف</p></div><span class="badge badge-green">وظيفة</span></div><p class="text-xs font-bold mt-2" style="color:var(--text-light)">خبرة 2-5 سنوات</p><button class="mt-3 px-4 py-2 bg-teal-50 text-teal-700 rounded-xl font-black text-xs hover:bg-teal-100 transition-all" onclick="showToast('تم إرسال طلبك بنجاح','✅')">تقديم الطلب</button></div></div>
+      </div>
+    </div>
+
+    <!-- JS TRAINING -->
+    <div id="js-training" class="p-6 space-y-4 hidden">
+      <div class="train-card"><div class="train-card-header"><div class="section-icon" style="background:#f0fdfa">🎓</div><div><p class="font-black text-sm">برنامج التدريب الصيدلاني السريري</p><p class="text-xs font-bold mt-1" style="color:var(--text-muted)">شركة الدواء الأهلية • بغداد</p><div class="flex gap-2 mt-2"><span class="badge badge-teal">3 أشهر</span><span class="badge badge-green">مفتوح</span></div></div></div><div class="train-card-body"><div class="flex justify-between text-xs font-bold" style="color:var(--text-muted)"><span>التقدم</span><span>45%</span></div><div class="train-progress-bar"><div class="train-progress-fill" style="width:45%"></div></div></div></div>
+      <div class="train-card"><div class="train-card-header"><div class="section-icon" style="background:#ede9fe">🔬</div><div><p class="font-black text-sm">تدريب على تحليل المختبرات المتقدمة</p><p class="text-xs font-bold mt-1" style="color:var(--text-muted)">مستشفى الكندي • بغداد</p><div class="flex gap-2 mt-2"><span class="badge badge-purple">شهران</span><span class="badge badge-amber">قريباً</span></div></div></div><div class="train-card-body"><button class="px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl font-black text-xs hover:bg-indigo-100 transition-all" onclick="showToast('تم إرسال طلب التدريب','📚')">التسجيل</button></div></div>
+    </div>
+
+    <!-- JS APPLICATIONS -->
+    <div id="js-applications" class="p-6 hidden">
+      <div class="section-card">
+        <h3 class="font-black text-sm mb-5">طلباتي المرسلة</h3>
+        <div class="app-row"><div><p class="font-black text-sm">صيدلاني سريري — مستشفى ابن سينا</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">أُرسل منذ 3 أيام</p></div><span class="badge badge-amber">قيد المراجعة</span></div>
+        <div class="app-row"><div><p class="font-black text-sm">فني مختبر — مختبر الرازي</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">أُرسل منذ أسبوع</p></div><span class="badge badge-green">مقبول</span></div>
+        <div class="app-row"><div><p class="font-black text-sm">ممرض — مستشفى الشمال</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">أُرسل منذ أسبوعين</p></div><span class="badge badge-red">مرفوض</span></div>
+      </div>
+    </div>
+
+    <!-- JS CV -->
+    <div id="js-cv" class="p-6 hidden">
+      <div class="section-card">
+        <div class="flex items-center justify-between mb-5">
+          <h3 class="font-black text-sm">سيرتك الذاتية</h3>
+          <span class="verified-badge">✓ مكتملة 85%</span>
+        </div>
+        <div class="space-y-4">
+          <div class="exp-entry"><p class="font-black text-sm">صيدلاني في مستشفى بغداد</p><p class="text-xs font-bold mt-1" style="color:var(--text-muted)">2021 — 2023 • بغداد</p><p class="text-xs mt-2" style="color:var(--text-light)">إجمالي الخبرة: 2 سنة</p></div>
+          <div class="exp-entry"><p class="font-black text-sm">متدرب صيدلة — شركة الخير</p><p class="text-xs font-bold mt-1" style="color:var(--text-muted)">2020 — 2021 • البصرة</p><p class="text-xs mt-2" style="color:var(--text-light)">إجمالي الخبرة: 1 سنة</p></div>
+        </div>
+        <div class="mt-4 p-4 rounded-2xl" style="background:var(--border)">
+          <p class="text-xs font-black" style="color:var(--text-muted)">إجمالي سنوات الخبرة</p>
+          <p class="text-2xl font-black mt-1">3.0 سنة</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS NOTIFICATIONS -->
+    <div id="js-notifications" class="p-6 hidden">
+      <div class="section-card">
+        <h3 class="font-black text-sm mb-4">جميع الإشعارات</h3>
+        <div class="notif-item"><div class="notif-dot mt-1.5"></div><div><p class="text-sm font-bold">دعوة للتقديم من مستشفى بغداد التعليمي</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">منذ ساعتين</p></div></div>
+        <div class="notif-item"><div class="notif-dot mt-1.5"></div><div><p class="text-sm font-bold">تم قبول طلبك للتدريب في شركة الخير</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">أمس</p></div></div>
+        <div class="notif-item" style="border:none"><div class="notif-dot mt-1.5" style="background:#94a3b8"></div><div><p class="text-sm font-bold" style="color:var(--text-muted)">تم رفض طلبك لوظيفة ممرض — مستشفى الشمال</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">منذ أسبوع</p></div></div>
+      </div>
+    </div>
+
+    <!-- JS SETTINGS -->
+    <div id="js-settings" class="p-6 hidden">
+      <div class="section-card">
+        <h3 class="font-black text-sm mb-4">الإعدادات</h3>
+        <div class="setting-row"><div><p class="font-bold text-sm">الوضع الليلي</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">تغيير مظهر التطبيق</p></div><div class="toggle-switch" id="themeToggle" onclick="toggleTheme()"><div class="toggle-knob"></div></div></div>
+        <div class="setting-row"><div><p class="font-bold text-sm">إشعارات الوظائف</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">إشعار عند ظهور وظيفة مناسبة</p></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div></div>
+        <div class="setting-row"><div><p class="font-bold text-sm">إظهار سيرتي للمؤسسات</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">السماح للمؤسسات الموثّقة برؤية ملفك</p></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div></div>
+        <div class="setting-row" style="border:none"><button onclick="logout()" class="w-full py-3 bg-red-50 text-red-600 font-black rounded-xl text-sm border border-red-100 hover:bg-red-100 transition-all">🚪 تسجيل الخروج</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Mobile bottom bar -->
+  <div class="bottom-bar">
+    <div class="bottom-bar-items">
+      <div class="bottom-item active" onclick="jsNav('home',this,true)"><div class="bi-icon">🏠</div><div>الرئيسية</div></div>
+      <div class="bottom-item" onclick="jsNav('jobs',this,true)"><div class="bi-icon">💼</div><div>الوظائف</div></div>
+      <div class="bottom-item" onclick="jsNav('training',this,true)"><div class="bi-icon">🎓</div><div>التدريب</div></div>
+      <div class="bottom-item" onclick="jsNav('notifications',this,true)"><div class="bi-icon">🔔</div><div>الإشعارات</div></div>
+      <div class="bottom-item" onclick="jsNav('settings',this,true)"><div class="bi-icon">⚙️</div><div>الإعدادات</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     4. EMPLOYER DASHBOARD
+============================================================ -->
+<div id="empDashApp">
+  <!-- Employer Sidebar -->
+  <div class="emp-sidebar">
+    <div class="emp-sidebar-logo">
+      <h1 class="text-lg font-black text-white">MedBridge <span style="color:#818cf8">Pro</span></h1>
+      <p class="text-xs font-black mt-1" style="color:#475569">لوحة المؤسسة</p>
+      <div class="mt-3 flex items-center gap-2">
+        <span class="verified-badge text-[10px] px-2 py-1" id="empVerBadge">✓ موثّقة</span>
+      </div>
+    </div>
+    <div style="padding:16px 0">
+      <div class="nav-section-title" style="color:#334155">الرئيسية</div>
+      <div class="emp-nav-item active" onclick="empNav('overview',this)"><span class="nav-icon">📊</span>نظرة عامة</div>
+      <div class="emp-nav-item" onclick="empNav('jobs-management',this)"><span class="nav-icon">💼</span>الوظائف والتدريب</div>
+      <div class="emp-nav-item" onclick="empNav('cvs',this)"><span class="nav-icon">👥</span>السير الذاتية</div>
+      <div class="emp-nav-item" onclick="empNav('favorites',this)"><span class="nav-icon">⭐</span>المفضّلة</div>
+      <div class="nav-section-title" style="color:#334155">الإدارة</div>
+      <div class="emp-nav-item" onclick="empNav('emp-notifications',this)"><span class="nav-icon">🔔</span>الإشعارات <span class="badge badge-purple mr-auto text-[10px]">5</span></div>
+      <div class="emp-nav-item" onclick="empNav('audit',this)"><span class="nav-icon">📝</span>سجل العمليات</div>
+      <div class="emp-nav-item" onclick="empNav('emp-settings',this)"><span class="nav-icon">⚙️</span>الإعدادات</div>
+      <div class="emp-nav-item" style="color:#f87171" onclick="logout()"><span class="nav-icon">🚪</span>تسجيل الخروج</div>
+    </div>
+  </div>
+
+  <!-- Employer Main -->
+  <div class="emp-dash-main">
+    <div class="emp-topnav">
+      <div>
+        <h2 class="font-black text-base" id="empPageTitle">نظرة عامة</h2>
+        <p class="text-xs font-bold" style="color:var(--text-light)" id="empPageSub" id="empOrgNameDisplay">مؤسستك الطبية</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="openPostJobModal()" class="px-4 py-2 bg-gradient-to-l from-indigo-600 to-indigo-500 text-white font-black rounded-xl text-xs shadow-md shadow-indigo-200 hover:shadow-lg transition-all">+ نشر إعلان</button>
+        <button onclick="toggleTheme()" class="w-9 h-9 rounded-xl flex items-center justify-center text-lg" style="background:var(--border)">🌙</button>
+        <div class="w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center text-white font-black text-sm">م</div>
+      </div>
+    </div>
+
+    <!-- EMP OVERVIEW -->
+    <div id="emp-overview" class="p-6 space-y-6">
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div class="emp-stat-card"><div class="text-2xl font-black text-indigo-600" id="statJobs">4</div><div class="text-xs font-bold mt-1" style="color:var(--text-muted)">وظائف منشورة</div></div>
+        <div class="emp-stat-card"><div class="text-2xl font-black text-purple-600" id="statTraining">2</div><div class="text-xs font-bold mt-1" style="color:var(--text-muted)">فرص التدريب</div></div>
+        <div class="emp-stat-card"><div class="text-2xl font-black text-teal-600" id="statMatched">18</div><div class="text-xs font-bold mt-1" style="color:var(--text-muted)">CV مطابقة</div></div>
+        <div class="emp-stat-card"><div class="text-2xl font-black text-green-600" id="statAccepted">3</div><div class="text-xs font-bold mt-1" style="color:var(--text-muted)">مقبولون</div></div>
+        <div class="emp-stat-card"><div class="text-2xl font-black text-amber-600" id="statTrainees">1</div><div class="text-xs font-bold mt-1" style="color:var(--text-muted)">متدربون حاليون</div></div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="section-card">
+          <h3 class="font-black text-sm mb-4 flex items-center gap-2">🔔 إشعارات المؤسسة</h3>
+          <div class="notif-item"><div class="notif-dot mt-1.5" style="background:#818cf8"></div><div><p class="text-sm font-bold">CV جديدة مطابقة لوظيفة صيدلاني سريري</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">منذ 30 دقيقة</p></div></div>
+          <div class="notif-item"><div class="notif-dot mt-1.5" style="background:#818cf8"></div><div><p class="text-sm font-bold">تقدّم مستخدم جديد على وظيفة فني مختبر</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">منذ ساعة</p></div></div>
+          <div class="notif-item" style="border:none"><div class="notif-dot mt-1.5" style="background:#818cf8"></div><div><p class="text-sm font-bold">4 CV مطابقة لفرصة التدريب الجديدة</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-light)">أمس</p></div></div>
+        </div>
+
+        <div class="section-card">
+          <h3 class="font-black text-sm mb-4 flex items-center gap-2">💼 الإعلانات النشطة</h3>
+          <div id="activeJobsList" class="space-y-2">
+            <div class="p-3 rounded-2xl flex justify-between items-center" style="background:var(--bg)">
+              <div><p class="font-black text-sm">صيدلاني سريري</p><p class="text-xs font-bold" style="color:var(--text-muted)">18 CV مطابقة</p></div>
+              <span class="badge badge-green">وظيفة</span>
+            </div>
+            <div class="p-3 rounded-2xl flex justify-between items-center" style="background:var(--bg)">
+              <div><p class="font-black text-sm">تدريب فني مختبر</p><p class="text-xs font-bold" style="color:var(--text-muted)">8 CV مطابقة</p></div>
+              <span class="badge badge-purple">تدريب</span>
+            </div>
+          </div>
+          <button onclick="openPostJobModal()" class="mt-4 w-full py-3 bg-indigo-50 text-indigo-700 font-black rounded-xl text-sm border border-indigo-100 hover:bg-indigo-100 transition-all">+ نشر إعلان جديد</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMP JOBS MANAGEMENT -->
+    <div id="emp-jobs-management" class="p-6 space-y-5 hidden">
+      <div class="flex justify-between items-center">
+        <h3 class="font-black text-base">الوظائف والتدريب المنشور</h3>
+        <button onclick="openPostJobModal()" class="px-4 py-2 bg-gradient-to-l from-indigo-600 to-indigo-500 text-white font-black rounded-xl text-xs shadow-md shadow-indigo-200">+ نشر إعلان</button>
+      </div>
+      <div id="jobsListEmp" class="space-y-3">
+        <div class="job-card"><div class="job-card-logo" style="background:#ede9fe">💊</div><div class="flex-1"><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="font-black text-sm">صيدلاني سريري</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">بغداد • خبرة 1-3 سنوات</p></div><span class="badge badge-green">وظيفة</span></div><div class="flex gap-2 mt-3"><button class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg font-black text-xs hover:bg-indigo-100 transition-all" onclick="empNav('cvs',document.querySelector('.emp-nav-item:nth-child(3)'));showToast('عرض CV المطابقة','👥')">عرض CV المطابقة (18)</button><button class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg font-black text-xs hover:bg-red-100 transition-all">حذف</button></div></div></div>
+        <div class="job-card"><div class="job-card-logo" style="background:#ede9fe">🔬</div><div class="flex-1"><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="font-black text-sm">تدريب فني مختبر</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">البصرة • خريج</p></div><span class="badge badge-purple">تدريب</span></div><div class="flex gap-2 mt-3"><button class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg font-black text-xs hover:bg-indigo-100 transition-all" onclick="showToast('عرض CV المطابقة','👥')">عرض CV المطابقة (8)</button><button class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg font-black text-xs hover:bg-red-100 transition-all">حذف</button></div></div></div>
+      </div>
+    </div>
+
+    <!-- EMP CVs -->
+    <div id="emp-cvs" class="p-6 space-y-5 hidden">
+      <div class="flex justify-between items-center flex-wrap gap-3">
+        <h3 class="font-black text-base">السير الذاتية المطابقة</h3>
+        <div class="flex items-center gap-2 text-xs font-bold" style="color:var(--text-muted)">ترتيب تلقائي حسب التطابق</div>
+      </div>
+
+      <!-- Filters -->
+      <div class="section-card space-y-4">
+        <p class="font-black text-sm flex items-center gap-2">🔍 فلاتر البحث الذكي</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="form-label">سنوات الخبرة (شريط منزلق)</label>
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-black text-indigo-600" id="sliderMinVal">0</span>
+              <input type="range" class="range-slider flex-1" min="0" max="15" value="0" id="expSliderMin" oninput="updateSlider()">
+              <span class="text-xs font-black text-indigo-600" id="sliderMaxVal">15</span>
+              <input type="range" class="range-slider flex-1" min="0" max="15" value="15" id="expSliderMax" oninput="updateSlider()">
+            </div>
+            <p class="text-xs font-bold mt-1" style="color:var(--text-muted)">من <span id="sliderRange">0 — 15</span> سنة</p>
+          </div>
+          <div>
+            <label class="form-label">المدينة</label>
+            <select class="form-input" id="filterCity" onchange="filterCVs()">
+              <option value="">الكل</option>
+              <option>بغداد</option><option>البصرة</option><option>نينوى</option><option>أربيل</option><option>النجف</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">الحالة الدراسية</label>
+            <select class="form-input" id="filterStatus" onchange="filterCVs()">
+              <option value="">الكل</option>
+              <option value="student">طالب</option>
+              <option value="graduate">خريج</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label class="form-label">التخصص (اختياري)</label>
+          <select class="form-input" id="filterSpecialty" onchange="filterCVs()" style="max-width:300px">
+            <option value="">كل التخصصات</option>
+            <option>صيدلاني</option><option>طبيب</option><option>ممرض / ممرضة</option>
+            <option>تحليلات مختبرية</option><option>أشعة</option><option>طوارئ طبية</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- CV Cards -->
+      <div id="cvCardsGrid" class="grid md:grid-cols-2 gap-4">
+        <!-- Generated by JS -->
+      </div>
+    </div>
+
+    <!-- EMP FAVORITES -->
+    <div id="emp-favorites" class="p-6 hidden">
+      <div class="section-card">
+        <h3 class="font-black text-sm mb-5">⭐ السير الذاتية المحفوظة</h3>
+        <div class="space-y-4" id="favList">
+          <div class="cv-match-card flex gap-3 items-start p-4">
+            <div class="cv-avatar" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">ع</div>
+            <div class="flex-1"><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="font-black text-sm">علي محمد الحسيني</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">صيدلاني • بغداد</p></div><span class="badge badge-green">خريج</span></div><p class="text-xs font-bold mt-1" style="color:var(--text-light)">خبرة: 3.0 سنة | القيمة: ⭐ 4.5</p><div class="flex gap-2 mt-2"><button onclick="openCVDetail('علي محمد الحسيني','صيدلاني','بغداد','خريج','3.0','4.5')" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg font-black text-xs hover:bg-indigo-100 transition-all">عرض السيرة</button><button onclick="showToast('تمت إزالة السيرة من المفضلة','🗑️')" class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg font-black text-xs hover:bg-red-100 transition-all">حذف</button></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMP NOTIFICATIONS -->
+    <div id="emp-notifications" class="p-6 hidden">
+      <div class="section-card">
+        <h3 class="font-black text-sm mb-4">جميع الإشعارات</h3>
+        <div class="notif-item"><div class="notif-dot mt-1.5" style="background:#818cf8"></div><div><p class="text-sm font-bold">CV جديدة مطابقة لوظيفة صيدلاني سريري</p><p class="text-xs mt-0.5" style="color:var(--text-light)">منذ 30 دقيقة</p></div></div>
+        <div class="notif-item"><div class="notif-dot mt-1.5" style="background:#818cf8"></div><div><p class="text-sm font-bold">تقدّم مستخدم جديد على وظيفة فني مختبر</p><p class="text-xs mt-0.5" style="color:var(--text-light)">منذ ساعة</p></div></div>
+        <div class="notif-item"><div class="notif-dot mt-1.5" style="background:#818cf8"></div><div><p class="text-sm font-bold">4 CV مطابقة لفرصة التدريب الجديدة</p><p class="text-xs mt-0.5" style="color:var(--text-light)">أمس</p></div></div>
+        <div class="notif-item"><div class="notif-dot mt-1.5" style="background:#818cf8"></div><div><p class="text-sm font-bold">تمت مراجعة ملفات التحقق بنجاح</p><p class="text-xs mt-0.5" style="color:var(--text-light)">منذ 3 أيام</p></div></div>
+        <div class="notif-item" style="border:none"><div class="notif-dot mt-1.5" style="background:#22c55e"></div><div><p class="text-sm font-bold">✓ تم تفعيل حساب مؤسستك رسمياً</p><p class="text-xs mt-0.5" style="color:var(--text-light)">منذ أسبوع</p></div></div>
+      </div>
+    </div>
+
+    <!-- AUDIT LOG -->
+    <div id="emp-audit" class="p-6 hidden">
+      <div class="section-card">
+        <h3 class="font-black text-sm mb-4">📝 سجل العمليات (Audit Log)</h3>
+        <div id="auditLogList">
+          <div class="audit-row"><span class="badge badge-purple text-[10px] shrink-0">نشر</span><div><p class="font-bold">نشر وظيفة: صيدلاني سريري</p><p class="text-slate-400 text-[11px] mt-0.5">2026-05-03 — 10:24 ص</p></div></div>
+          <div class="audit-row"><span class="badge badge-blue text-[10px] shrink-0">عرض</span><div><p class="font-bold">عرض سيرة: علي محمد الحسيني</p><p class="text-slate-400 text-[11px] mt-0.5">2026-05-03 — 09:10 ص</p></div></div>
+          <div class="audit-row"><span class="badge badge-green text-[10px] shrink-0">قبول</span><div><p class="font-bold">قبول مباشر: فاطمة كريم</p><p class="text-slate-400 text-[11px] mt-0.5">2026-05-02 — 03:45 م</p></div></div>
+          <div class="audit-row"><span class="badge badge-amber text-[10px] shrink-0">دعوة</span><div><p class="font-bold">دعوة للتقديم: أحمد عبد الله</p><p class="text-slate-400 text-[11px] mt-0.5">2026-05-02 — 11:20 ص</p></div></div>
+          <div class="audit-row"><span class="badge badge-red text-[10px] shrink-0">رفض</span><div><p class="font-bold">رفض: حسين عباس</p><p class="text-slate-400 text-[11px] mt-0.5">2026-05-01 — 02:00 م</p></div></div>
+          <div class="audit-row"><span class="badge badge-teal text-[10px] shrink-0">حفظ</span><div><p class="font-bold">حفظ في المفضلة: زينب محمد</p><p class="text-slate-400 text-[11px] mt-0.5">2026-05-01 — 10:05 ص</p></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- EMP SETTINGS -->
+    <div id="emp-settings" class="p-6 hidden">
+      <div class="section-card">
+        <h3 class="font-black text-sm mb-4">إعدادات المؤسسة</h3>
+        <div class="setting-row"><div><p class="font-bold text-sm">الوضع الليلي</p></div><div class="toggle-switch" onclick="toggleTheme()"><div class="toggle-knob"></div></div></div>
+        <div class="setting-row"><div><p class="font-bold text-sm">إشعار CV جديدة</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">إشعار فور ظهور CV مطابقة</p></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div></div>
+        <div class="setting-row"><div><p class="font-bold text-sm">إشعار التقديمات</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">إشعار عند تقديم مستخدم على إعلان</p></div><div class="toggle-switch on" onclick="this.classList.toggle('on')"><div class="toggle-knob"></div></div></div>
+        <div class="setting-row" style="border:none"><button onclick="logout()" class="w-full py-3 bg-red-50 text-red-600 font-black rounded-xl text-sm border border-red-100 hover:bg-red-100 transition-all">🚪 تسجيل الخروج</button></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Employer mobile bottom bar -->
+  <div class="emp-bottom-bar">
+    <div class="bottom-bar-items">
+      <div class="bottom-item active" onclick="empNav('overview',this,true)"><div class="bi-icon">📊</div><div>نظرة</div></div>
+      <div class="bottom-item" onclick="empNav('jobs-management',this,true)"><div class="bi-icon">💼</div><div>الوظائف</div></div>
+      <div class="bottom-item" onclick="empNav('cvs',this,true)"><div class="bi-icon">👥</div><div>CV</div></div>
+      <div class="bottom-item" onclick="empNav('emp-notifications',this,true)"><div class="bi-icon">🔔</div><div>إشعارات</div></div>
+      <div class="bottom-item" onclick="empNav('emp-settings',this,true)"><div class="bi-icon">⚙️</div><div>إعدادات</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     5. POST JOB MODAL
+============================================================ -->
+<div id="postJobModal">
+  <div class="modal-box">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="font-black text-lg">نشر إعلان جديد</h3>
+      <button onclick="closePostJobModal()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-all text-xl">×</button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="form-label">نوع الإعلان</label>
+        <div class="flex gap-3">
+          <button onclick="setAdType('job',this)" id="adTypeJob" class="flex-1 py-3 rounded-xl font-black text-sm border-2 border-indigo-500 bg-indigo-50 text-indigo-700">💼 وظيفة</button>
+          <button onclick="setAdType('training',this)" id="adTypeTraining" class="flex-1 py-3 rounded-xl font-black text-sm border-2 border-slate-200 text-slate-500 hover:border-indigo-300 transition-all">🎓 تدريب</button>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="form-label">المجال / التخصص</label>
+          <select class="form-input" id="adSpecialty">
+            <option value="">اختر التخصص...</option>
+            <option>صيدلاني</option><option>طبيب</option><option>ممرض / ممرضة</option>
+            <option>تحليلات مختبرية</option><option>أشعة</option><option>طوارئ طبية</option>
+            <option>تخدير</option><option>تغذية إكلينيكية</option><option>أسنان</option>
+          </select>
+        </div>
+        <div>
+          <label class="form-label">المدينة</label>
+          <select class="form-input" id="adCity">
+            <option value="">اختر...</option>
+            <option>بغداد</option><option>البصرة</option><option>نينوى</option><option>أربيل</option>
+            <option>النجف</option><option>كربلاء</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">المسمى الوظيفي</label>
+        <input type="text" placeholder="مثال: صيدلاني سريري أول" class="form-input" id="adTitle">
+      </div>
+      <div>
+        <label class="form-label">سنوات الخبرة المطلوبة</label>
+        <div class="flex gap-3 items-center">
+          <div class="flex-1"><label class="text-xs font-bold text-slate-400 mb-1 block">من</label><input type="number" min="0" max="30" value="0" class="form-input" id="adExpFrom" placeholder="0"></div>
+          <div class="text-slate-400 font-black mt-4">—</div>
+          <div class="flex-1"><label class="text-xs font-bold text-slate-400 mb-1 block">إلى</label><input type="number" min="0" max="30" value="3" class="form-input" id="adExpTo" placeholder="3"></div>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">الفئة المستهدفة</label>
+        <div class="flex gap-3">
+          <button onclick="setTargetGroup('student',this)" class="flex-1 py-2.5 rounded-xl font-black text-sm border-2 border-slate-200 text-slate-500 hover:border-indigo-300 transition-all" id="tgStudent">👨‍🎓 طالب</button>
+          <button onclick="setTargetGroup('graduate',this)" class="flex-1 py-2.5 rounded-xl font-black text-sm border-2 border-slate-200 text-slate-500 hover:border-indigo-300 transition-all" id="tgGraduate">🎓 خريج</button>
+          <button onclick="setTargetGroup('both',this)" class="flex-1 py-2.5 rounded-xl font-black text-sm border-2 border-indigo-500 bg-indigo-50 text-indigo-700" id="tgBoth">👥 الاثنان</button>
+        </div>
+      </div>
+      <div>
+        <label class="form-label">متطلبات إضافية (اختياري)</label>
+        <textarea placeholder="أي متطلبات إضافية..." class="form-input" rows="2" id="adExtra" style="resize:none"></textarea>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closePostJobModal()" class="flex-1 py-3 border-2 border-slate-200 text-slate-500 font-black rounded-xl text-sm hover:bg-slate-50 transition-all">إلغاء</button>
+      <button onclick="publishJob()" class="flex-1 py-3 bg-gradient-to-l from-indigo-600 to-indigo-500 text-white font-black rounded-xl text-sm shadow-md shadow-indigo-200 hover:shadow-lg transition-all">نشر الإعلان ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     6. CV DETAIL MODAL
+============================================================ -->
+<div id="cvDetailModal">
+  <div class="modal-box" style="max-width:700px">
+    <div class="flex justify-between items-center mb-6">
+      <h3 class="font-black text-lg">عرض السيرة الذاتية</h3>
+      <button onclick="closeCVDetail()" class="w-9 h-9 rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-all text-xl">×</button>
+    </div>
+    <div id="cvDetailContent"></div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="cvAction('reject')" class="flex-1 py-3 border-2 border-red-200 text-red-600 font-black rounded-xl text-sm hover:bg-red-50 transition-all">✗ رفض</button>
+      <button onclick="cvAction('save')" class="flex-1 py-3 border-2 border-amber-200 text-amber-700 font-black rounded-xl text-sm hover:bg-amber-50 transition-all">⭐ حفظ</button>
+      <button onclick="cvAction('invite')" class="flex-1 py-3 border-2 border-indigo-300 text-indigo-700 font-black rounded-xl text-sm hover:bg-indigo-50 transition-all">📨 دعوة</button>
+      <button onclick="cvAction('accept')" class="flex-1 py-3 bg-gradient-to-l from-green-600 to-green-500 text-white font-black rounded-xl text-sm shadow-md shadow-green-200 hover:shadow-lg transition-all">✓ قبول مباشر</button>
+    </div>
+    <p class="text-center text-xs font-bold mt-3" style="color:var(--text-light)">⚠️ معلومات التواصل لن تظهر إلا بعد القبول</p>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+// ── Global State ──
+let currentRole = 'jobseeker'; // 'jobseeker' | 'employer'
+let authMode = 'register';
+let selectedAdType = 'job';
+let selectedTargetGroup = 'both';
+let empAccountStatus = 'pending'; // 'pending' | 'verified'
+let empOrgData = {};
+let postedJobs = [];
+
+// Shared CV pool (jobseeker posts = employer sees)
+const sharedCVPool = [
+  {name:'علي محمد الحسيني',specialty:'صيدلاني',city:'بغداد',status:'graduate',exp:3.0,rating:4.5,avatar:'ع',color:'linear-gradient(135deg,#6366f1,#8b5cf6)'},
+  {name:'فاطمة كريم العبيدي',specialty:'تحليلات مختبرية',city:'البصرة',status:'graduate',exp:1.5,rating:4.1,avatar:'ف',color:'linear-gradient(135deg,#0d9488,#059669)'},
+  {name:'أحمد عبد الله الجبوري',specialty:'ممرض / ممرضة',city:'نينوى',status:'student',exp:0.5,rating:3.8,avatar:'أ',color:'linear-gradient(135deg,#f59e0b,#d97706)'},
+  {name:'زينب محمد السامرائي',specialty:'صيدلاني',city:'بغداد',status:'graduate',exp:5.0,rating:4.8,avatar:'ز',color:'linear-gradient(135deg,#ec4899,#db2777)'},
+  {name:'حسين علي البغدادي',specialty:'أشعة',city:'كربلاء',status:'graduate',exp:2.5,rating:4.2,avatar:'ح',color:'linear-gradient(135deg,#3b82f6,#2563eb)'},
+  {name:'مريم سعد الموسوي',specialty:'طوارئ طبية',city:'النجف',status:'student',exp:0.0,rating:3.5,avatar:'م',color:'linear-gradient(135deg,#8b5cf6,#7c3aed)'},
+  {name:'عمر خالد الدليمي',specialty:'تحليلات مختبرية',city:'الأنبار',status:'graduate',exp:4.0,rating:4.6,avatar:'ع',color:'linear-gradient(135deg,#0d9488,#0f766e)'},
+  {name:'نور الهدى التميمي',specialty:'صيدلاني',city:'أربيل',status:'graduate',exp:2.0,rating:4.3,avatar:'ن',color:'linear-gradient(135deg,#f97316,#ea580c)'},
+];
+
+// ── Auth Helpers ──
+function switchAuthMode(mode) {
+  authMode = mode;
+  const reg = document.getElementById('tabRegister');
+  const log = document.getElementById('tabLogin');
+  const roleWrap = document.getElementById('roleToggleWrap');
+  const loginF = document.getElementById('loginFields');
+  const jsF = document.getElementById('jobseekerFields');
+  const empF = document.getElementById('employerFields');
+  if(mode==='login'){
+    reg.className='flex-1 py-4 font-black text-sm transition-all text-slate-400 border-b-2 border-transparent';
+    log.className='flex-1 py-4 font-black text-sm transition-all text-teal-600 border-b-2 border-teal-600';
+    roleWrap.classList.add('hidden');
+    jsF.classList.add('hidden');
+    empF.classList.add('hidden');
+    loginF.classList.remove('hidden');
+  } else {
+    reg.className='flex-1 py-4 font-black text-sm transition-all text-teal-600 border-b-2 border-teal-600';
+    log.className='flex-1 py-4 font-black text-sm transition-all text-slate-400 border-b-2 border-transparent';
+    roleWrap.classList.remove('hidden');
+    loginF.classList.add('hidden');
+    switchRole(currentRole);
+  }
+}
+
+function switchRole(role) {
+  currentRole = role;
+  const jsF = document.getElementById('jobseekerFields');
+  const empF = document.getElementById('employerFields');
+  const btnJob = document.getElementById('btnJob');
+  const btnOrg = document.getElementById('btnOrg');
+  if(role==='jobseeker'){
+    jsF.classList.remove('hidden');
+    empF.classList.add('hidden');
+    btnJob.className='flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white shadow-sm text-teal-600';
+    btnOrg.className='flex-1 py-3 rounded-xl font-black text-sm transition-all text-slate-500';
+  } else {
+    jsF.classList.add('hidden');
+    empF.classList.remove('hidden');
+    btnJob.className='flex-1 py-3 rounded-xl font-black text-sm transition-all text-slate-500';
+    btnOrg.className='flex-1 py-3 rounded-xl font-black text-sm transition-all bg-white shadow-sm text-indigo-600';
+  }
+}
+
+function goEmpStep2() {
+  const name = document.getElementById('empOrgName').value;
+  const type = document.getElementById('empOrgType').value;
+  if(!name||!type){showToast('الرجاء إكمال جميع الحقول','⚠️');return;}
+  showStep('empRegStep2','empRegStep1');
+}
+
+function showStep(showId,hideId){
+  document.getElementById(hideId).classList.add('hidden');
+  document.getElementById(showId).classList.remove('hidden');
+}
+
+function setDocFile(areaId,fileId,label){
+  const f=document.getElementById(fileId).files[0];
+  if(f){
+    const area=document.getElementById(areaId);
+    area.classList.add('has-file');
+    area.querySelector('p').textContent=label+' ✓';
+    area.querySelector('.doc-icon').textContent='✅';
+  }
+}
+
+function loginJobseeker() {
+  document.getElementById('authPage').style.display='none';
+  document.getElementById('dashApp').className='active';
+  showToast('أهلاً بك في MedBridge Pro','🏥');
+  renderJSHome();
+}
+
+function loginEmployer() {
+  empOrgData = {
+    name: document.getElementById('empOrgName').value || 'مستشفى النور الطبي',
+    type: document.getElementById('empOrgType').value || 'مستشفى خاص',
+  };
+  document.getElementById('authPage').style.display='none';
+  document.getElementById('pendingOrgName').textContent = empOrgData.name;
+  document.getElementById('pendingOrgType').textContent = empOrgData.type;
+  document.getElementById('empPendingPage').className='active';
+  addAuditLog('إنشاء','تقديم طلب تسجيل المؤسسة');
+}
+
+function handleLogin() {
+  const email = document.getElementById('loginEmail').value;
+  // Simple demo: if contains 'emp' go employer, else jobseeker
+  if(email.includes('emp') || currentRole==='employer') {
+    demoLogin('employer');
+  } else {
+    demoLogin('jobseeker');
+  }
+}
+
+function demoLogin(role) {
+  if(role==='jobseeker') {
+    loginJobseeker();
+  } else {
+    empOrgData = {name:'مستشفى النور الطبي',type:'مستشفى خاص'};
+    empAccountStatus = 'verified';
+    document.getElementById('authPage').style.display='none';
+    launchEmpDash();
+  }
+}
+
+function demoActivateEmployer() {
+  empAccountStatus = 'verified';
+  document.getElementById('empPendingPage').className='';
+  launchEmpDash();
+}
+
+function launchEmpDash() {
+  document.getElementById('empDashApp').className='active';
+  document.getElementById('empPageSub').textContent = empOrgData.name || 'مؤسستك الطبية';
+  renderCVCards(sharedCVPool);
+  showToast('✓ حساب المؤسسة مفعّل — أهلاً بك','🏢');
+}
+
+function logout() {
+  document.getElementById('dashApp').className='';
+  document.getElementById('empDashApp').className='';
+  document.getElementById('empPendingPage').className='';
+  document.getElementById('authPage').style.display='flex';
+  showToast('تم تسجيل الخروج','👋');
+}
+
+// ── Jobseeker Nav ──
+const jsTitles = {home:'لوحة التحكم',jobs:'الوظائف والفرص',training:'برامج التدريب',applications:'طلباتي',cv:'سيرتي الذاتية',notifications:'الإشعارات',settings:'الإعدادات'};
+function jsNav(page, el, isMobile=false) {
+  document.querySelectorAll('#dashApp .nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('#dashApp .bottom-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('[id^="js-"]').forEach(s=>s.classList.add('hidden'));
+  const sec = document.getElementById('js-'+page);
+  if(sec) sec.classList.remove('hidden');
+  document.getElementById('jsPageTitle').textContent = jsTitles[page]||page;
+}
+
+// ── Employer Nav ──
+const empTitles = {'overview':'نظرة عامة','jobs-management':'الوظائف والتدريب','cvs':'السير الذاتية المطابقة','favorites':'المفضّلة','emp-notifications':'الإشعارات','audit':'سجل العمليات','emp-settings':'الإعدادات'};
+function empNav(page, el, isMobile=false) {
+  document.querySelectorAll('#empDashApp .emp-nav-item').forEach(n=>n.classList.remove('active'));
+  document.querySelectorAll('#empDashApp .bottom-item').forEach(n=>n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  document.querySelectorAll('[id^="emp-"]').forEach(s=>s.classList.add('hidden'));
+  const sec = document.getElementById('emp-'+page);
+  if(sec) sec.classList.remove('hidden');
+  document.getElementById('empPageTitle').textContent = empTitles[page]||page;
+}
+
+// ── Post Job Modal ──
+function openPostJobModal() {
+  document.getElementById('postJobModal').classList.add('open');
+}
+function closePostJobModal() {
+  document.getElementById('postJobModal').classList.remove('open');
+}
+function setAdType(type, el) {
+  selectedAdType = type;
+  document.getElementById('adTypeJob').className='flex-1 py-3 rounded-xl font-black text-sm border-2 '+(type==='job'?'border-indigo-500 bg-indigo-50 text-indigo-700':'border-slate-200 text-slate-500 hover:border-indigo-300 transition-all');
+  document.getElementById('adTypeTraining').className='flex-1 py--3 rounded-xl font-black text-sm border-2 '+(type==='training'?'border-indigo-500 bg-indigo-50 text-indigo-700':'border-slate-200 text-slate-500 hover:border-indigo-300 transition-all');
+}
+function setTargetGroup(g, el) {
+  selectedTargetGroup = g;
+  ['tgStudent','tgGraduate','tgBoth'].forEach(id=>{
+    document.getElementById(id).className='flex-1 py-2.5 rounded-xl font-black text-sm border-2 border-slate-200 text-slate-500 hover:border-indigo-300 transition-all';
+  });
+  el.className='flex-1 py-2.5 rounded-xl font-black text-sm border-2 border-indigo-500 bg-indigo-50 text-indigo-700';
+}
+function publishJob() {
+  const title = document.getElementById('adTitle').value;
+  const specialty = document.getElementById('adSpecialty').value;
+  const city = document.getElementById('adCity').value;
+  const expFrom = document.getElementById('adExpFrom').value;
+  const expTo = document.getElementById('adExpTo').value;
+  if(!title||!specialty||!city){showToast('الرجاء إكمال الحقول المطلوبة','⚠️');return;}
+  const job = {title,specialty,city,expFrom:parseFloat(expFrom),expTo:parseFloat(expTo),type:selectedAdType,target:selectedTargetGroup};
+  postedJobs.unshift(job);
+  addAuditLog('نشر',`نشر ${selectedAdType==='job'?'وظيفة':'تدريب'}: ${title}`);
+  updateStats();
+  // Auto-match CVs
+  const matched = sharedCVPool.filter(cv=>{
+    const expOk = cv.exp >= job.expFrom && cv.exp <= job.expTo;
+    const specialtyOk = !specialty || cv.specialty === specialty;
+    const cityOk = !city || cv.city === city;
+    const targetOk = job.target==='both' || (job.target==='student'&&cv.status==='student') || (job.target==='graduate'&&cv.status==='graduate');
+    return expOk && specialtyOk;
+  });
+  closePostJobModal();
+  showToast(`تم نشر الإعلان — ${matched.length} CV مطابقة`,'✅');
+  // Refresh jobs list
+  addJobToList(job, matched.length);
+}
+
+function addJobToList(job, matchCount) {
+  const list = document.getElementById('jobsListEmp');
+  const icons = {صيدلاني:'💊','تحليلات مختبرية':'🔬','ممرض / ممرضة':'🏥',طبيب:'🩺',أشعة:'🩻',أسنان:'🦷','طوارئ طبية':'🚑'};
+  const icon = icons[job.specialty]||'💼';
+  const typeB = job.type==='job'?'<span class="badge badge-green">وظيفة</span>':'<span class="badge badge-purple">تدريب</span>';
+  const div = document.createElement('div');
+  div.className='job-card';
+  div.innerHTML=`<div class="job-card-logo" style="background:#ede9fe">${icon}</div><div class="flex-1"><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="font-black text-sm">${job.title}</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">${job.city} • خبرة ${job.expFrom}-${job.expTo} سنوات</p></div>${typeB}</div><div class="flex gap-2 mt-3"><button class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg font-black text-xs hover:bg-indigo-100 transition-all" onclick="empNav('cvs',document.querySelector('.emp-nav-item:nth-child(3)'));filterCVsByJob('${job.specialty}',${job.expFrom},${job.expTo})">عرض CV المطابقة (${matchCount})</button><button class="px-3 py-1.5 bg-red-50 text-red-600 rounded-lg font-black text-xs hover:bg-red-100 transition-all">حذف</button></div></div>`;
+  list.prepend(div);
+  // Also add to overview
+  const activeList = document.getElementById('activeJobsList');
+  const d2=document.createElement('div');
+  d2.className='p-3 rounded-2xl flex justify-between items-center';
+  d2.style.background='var(--bg)';
+  d2.innerHTML=`<div><p class="font-black text-sm">${job.title}</p><p class="text-xs font-bold" style="color:var(--text-muted)">${matchCount} CV مطابقة</p></div>${typeB}`;
+  activeList.prepend(d2);
+}
+
+function filterCVsByJob(specialty,expFrom,expTo){
+  document.getElementById('expSliderMin').value=expFrom;
+  document.getElementById('expSliderMax').value=expTo;
+  updateSlider();
+  filterCVs();
+}
+
+// ── CV Rendering ──
+function renderCVCards(cvs) {
+  const grid = document.getElementById('cvCardsGrid');
+  if(!grid) return;
+  const sorted = [...cvs].sort((a,b)=>b.rating-a.rating||b.exp-a.exp);
+  grid.innerHTML = sorted.map(cv=>{
+    const matchScore = Math.round(60 + cv.rating * 8);
+    return `<div class="cv-match-card">
+      <div class="flex gap-3 items-start">
+        <div class="cv-match-score">${matchScore}%</div>
+        <div class="cv-avatar" style="background:${cv.color}">${cv.avatar}</div>
+        <div class="flex-1 min-w-0">
+          <div class="flex justify-between items-start flex-wrap gap-1">
+            <p class="font-black text-sm">${cv.name}</p>
+            <span class="badge ${cv.status==='graduate'?'badge-green':'badge-blue'}">${cv.status==='graduate'?'خريج':'طالب'}</span>
+          </div>
+          <p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">${cv.specialty} • ${cv.city}</p>
+          <div class="flex gap-3 mt-1">
+            <p class="text-xs font-bold" style="color:var(--text-light)">خبرة: ${cv.exp} سنة</p>
+            <p class="text-xs font-bold" style="color:#f59e0b">⭐ ${cv.rating}</p>
+          </div>
+          <div class="flex gap-2 mt-2">
+            <button onclick="openCVDetail('${cv.name}','${cv.specialty}','${cv.city}','${cv.status}','${cv.exp}','${cv.rating}')" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg font-black text-xs hover:bg-indigo-100 transition-all">عرض السيرة</button>
+            <button onclick="saveFav('${cv.name}','${cv.specialty}','${cv.city}','${cv.status}','${cv.exp}','${cv.rating}','${cv.avatar}','${cv.color}')" class="px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg font-black text-xs hover:bg-amber-100 transition-all">⭐ حفظ</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function filterCVs() {
+  const minExp = parseFloat(document.getElementById('expSliderMin').value)||0;
+  const maxExp = parseFloat(document.getElementById('expSliderMax').value)||15;
+  const city = document.getElementById('filterCity').value;
+  const status = document.getElementById('filterStatus').value;
+  const specialty = document.getElementById('filterSpecialty').value;
+  const filtered = sharedCVPool.filter(cv=>{
+    const expOk = cv.exp >= minExp && cv.exp <= maxExp;
+    const cityOk = !city || cv.city === city;
+    const statusOk = !status || cv.status === status;
+    const specialtyOk = !specialty || cv.specialty === specialty;
+    return expOk && cityOk && statusOk && specialtyOk;
+  });
+  renderCVCards(filtered);
+}
+
+function updateSlider() {
+  const min = parseInt(document.getElementById('expSliderMin').value);
+  const max = parseInt(document.getElementById('expSliderMax').value);
+  document.getElementById('sliderMinVal').textContent = min;
+  document.getElementById('sliderMaxVal').textContent = max;
+  document.getElementById('sliderRange').textContent = min + ' — ' + max;
+  filterCVs();
+}
+
+// ── CV Detail Modal ──
+function openCVDetail(name,specialty,city,status,exp,rating) {
+  addAuditLog('عرض',`عرض سيرة: ${name}`);
+  const statusLabel = status==='graduate'?'خريج':'طالب';
+  document.getElementById('cvDetailContent').innerHTML = `
+    <div class="flex gap-4 items-center mb-6 p-4 rounded-2xl" style="background:var(--bg)">
+      <div class="cv-avatar w-16 h-16 text-2xl" style="background:linear-gradient(135deg,#6366f1,#8b5cf6)">${name[0]}</div>
+      <div>
+        <p class="font-black text-lg">${name}</p>
+        <p class="font-bold text-sm mt-1" style="color:var(--text-muted)">${specialty} • ${city}</p>
+        <div class="flex gap-2 mt-2"><span class="badge ${status==='graduate'?'badge-green':'badge-blue'}">${statusLabel}</span><span class="badge badge-purple">⭐ ${rating}</span></div>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4 mb-4">
+      <div class="p-4 rounded-2xl text-center" style="background:var(--bg)"><div class="text-2xl font-black text-indigo-600">${exp}</div><div class="text-xs font-bold mt-1" style="color:var(--text-muted)">سنوات الخبرة</div></div>
+      <div class="p-4 rounded-2xl text-center" style="background:var(--bg)"><div class="text-2xl font-black text-amber-500">⭐ ${rating}</div><div class="text-xs font-bold mt-1" style="color:var(--text-muted)">القيمة المهنية</div></div>
+    </div>
+    <div class="space-y-3">
+      <div class="p-4 rounded-2xl" style="background:var(--bg)"><p class="font-black text-xs mb-2" style="color:var(--text-muted)">الخبرات العملية</p><div class="space-y-2"><div class="flex justify-between text-sm font-bold"><span>${specialty} — مستشفى النموذج</span><span style="color:var(--text-muted)">2022 — 2024</span></div></div></div>
+      <div class="p-4 rounded-2xl" style="background:var(--bg)"><p class="font-black text-xs mb-2" style="color:var(--text-muted)">التعليم</p><p class="text-sm font-bold">بكالوريوس ${specialty} — جامعة بغداد</p></div>
+    </div>
+    <div class="mt-4 p-3 rounded-xl border border-amber-200 bg-amber-50 text-center">
+      <p class="text-xs font-black text-amber-700">🔒 معلومات التواصل محجوبة — ستظهر بعد القبول فقط</p>
+    </div>`;
+  document.getElementById('cvDetailModal').classList.add('open');
+}
+function closeCVDetail() {
+  document.getElementById('cvDetailModal').classList.remove('open');
+}
+function cvAction(action) {
+  const labels = {accept:'تم القبول المباشر ✅',reject:'تم الرفض',save:'تم الحفظ في المفضلة ⭐',invite:'تم إرسال الدعوة 📨'};
+  const icons = {accept:'✅',reject:'✗',save:'⭐',invite:'📨'};
+  addAuditLog(action==='accept'?'قبول':action==='reject'?'رفض':action==='save'?'حفظ':'دعوة','إجراء على سيرة ذاتية');
+  showToast(labels[action], icons[action]);
+  if(action==='accept') {
+    document.getElementById('statAccepted').textContent = parseInt(document.getElementById('statAccepted').textContent)+1;
+  }
+  closeCVDetail();
+}
+
+function saveFav(name,specialty,city,status,exp,rating,avatar,color) {
+  addAuditLog('حفظ',`حفظ في المفضلة: ${name}`);
+  showToast(`تم حفظ ${name} في المفضلة`,'⭐');
+  const favList = document.getElementById('favList');
+  const statusLabel = status==='graduate'?'خريج':'طالب';
+  const div = document.createElement('div');
+  div.className='cv-match-card flex gap-3 items-start p-4 mb-4';
+  div.innerHTML=`<div class="cv-avatar" style="background:${color}">${avatar}</div><div class="flex-1"><div class="flex justify-between items-start flex-wrap gap-2"><div><p class="font-black text-sm">${name}</p><p class="text-xs font-bold mt-0.5" style="color:var(--text-muted)">${specialty} • ${city}</p></div><span class="badge ${status==='graduate'?'badge-green':'badge-blue'}">${statusLabel}</span></div><p class="text-xs font-bold mt-1" style="color:var(--text-light)">خبرة: ${exp} سنة | القيمة: ⭐ ${rating}</p><div class="flex gap-2 mt-2"><button onclick="openCVDetail('${name}','${specialty}','${city}','${status}','${exp}','${rating}')" class="px-3 py-1.5 bg-indigo-50 text-indigo-700 rounded-lg font-black text-xs hover:bg-indigo-100 transition-all">عرض السيرة</button></div></div>`;
+  favList.appendChild(div);
+}
+
+// ── Stats ──
+function updateStats() {
+  const jobs = postedJobs.filter(j=>j.type==='job').length + 4;
+  const training = postedJobs.filter(j=>j.type==='training').length + 2;
+  document.getElementById('statJobs').textContent = jobs;
+  document.getElementById('statTraining').textContent = training;
+}
+
+// ── Audit Log ──
+function addAuditLog(type, desc) {
+  const colors = {نشر:'badge-purple',عرض:'badge-blue',قبول:'badge-green',دعوة:'badge-amber',رفض:'badge-red',حفظ:'badge-teal',إنشاء:'badge-gray'};
+  const list = document.getElementById('auditLogList');
+  if(!list) return;
+  const now = new Date();
+  const timeStr = now.toLocaleDateString('ar-IQ') + ' — ' + now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
+  const div = document.createElement('div');
+  div.className='audit-row';
+  div.innerHTML=`<span class="badge ${colors[type]||'badge-gray'} text-[10px] shrink-0">${type}</span><div><p class="font-bold">${desc}</p><p class="text-slate-400 text-[11px] mt-0.5">${timeStr}</p></div>`;
+  list.prepend(div);
+}
+
+// ── Theme ──
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme', isDark?'':'dark');
+  document.getElementById('themeToggle')?.classList.toggle('on',!isDark);
+}
+
+// ── Toast ──
+function showToast(msg, icon='✓') {
+  document.getElementById('toastMsg').textContent = msg;
+  document.getElementById('toastIcon').textContent = icon;
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ── Scroll Indicator ──
+window.addEventListener('scroll',()=>{
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  document.getElementById('scrollIndicator').style.width=(h>0?(window.scrollY/h)*100:0)+'%';
+});
+
+// ── Init ──
+renderCVCards(sharedCVPool);
+</script>
+</body>
+</html>
